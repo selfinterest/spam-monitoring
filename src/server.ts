@@ -4,10 +4,6 @@ import {Service} from "./decorators/service.decorator";
 import logger = require("koa-logger");
 import {SpamRouter} from "./router";
 
-export interface Thing {
-
-}
-
 @Service()
 export class SpamServer extends Koa {
     private readonly port: string;
@@ -25,7 +21,6 @@ export class SpamServer extends Koa {
         this.listen(this.port, () => {
             console.log('SPAM server listening on ' + this.port);
         })
-        // Instantiate dependencies
 
     }
 }

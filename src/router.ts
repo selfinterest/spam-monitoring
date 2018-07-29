@@ -7,26 +7,26 @@ import KoaRouter = require("koa-router");
 import mount = require("koa-mount");
 
 @Service()
-@Router("/api/alerts")
+@Router("/alerts")
 export class AlertsRouter extends KoaRouter{
 
-    static routerConfiguration: any = {};
-
-    constructor(protected config: SpamConfig){
+    constructor(protected config: SpamConfig, protected alertsController: AlertsController){
         super();
-        //this.prefix("/api/alerts2");
     }
 
     @Route()
-    getAlerts(ctx: Koa.Context){
-        ctx.body = {ok: false};
+    getAlerts(ctx: Koa.Context) {
+        ctx.body = this.alertsController.getAlerts();
     }
+
 }
 
 // The main router
 @Service()
 @Router()
 export class SpamRouter extends KoaRouter {
+
+    private readonly apiVersion = "v1";
 
     // A status route
     @Route()
@@ -38,7 +38,7 @@ export class SpamRouter extends KoaRouter {
         super();
 
         // Mount the router on API
-        this.use(alertsRouter.routes());
+        this.use("/api/" + this.apiVersion, alertsRouter.routes());
 
     }
 }
