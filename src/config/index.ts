@@ -1,14 +1,6 @@
 import rc = require("rc");
-import {Inject, Service, Factory} from "../decorators/service.decorator";
+import { Service, Factory} from "../decorators/service.decorator";
 import {get} from "lodash";
-/*export interface SpamConfig {
-
-}*/
-
-
-/*export const config: SpamConfig = rc("spamdemo", {
-
-}*/
 
 @Service()
 export class SpamConfig {

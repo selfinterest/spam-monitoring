@@ -1,45 +1,44 @@
 import {Service} from "./decorators/service.decorator";
 import {SpamConfig} from "./config";
-import {SpamController} from "./controllers";
-import {AlertsController} from "./controllers/alerts.controller";
+import {AlertsController} from "./controllers";
 import {Route, Router} from "./decorators/route.decorator";
 import Koa = require("koa");
 import KoaRouter = require("koa-router");
+import mount = require("koa-mount");
 
 @Service()
-@Router("/alert")
+@Router("/api/alerts")
 export class AlertsRouter extends KoaRouter{
+
+    static routerConfiguration: any = {};
 
     constructor(protected config: SpamConfig){
         super();
+        //this.prefix("/api/alerts2");
     }
 
-    @Route({path: "/"})
-    getRoute(ctx: Koa.Context){
-
-    }
-
-    test(){
-        console.log("How?");
+    @Route()
+    getAlerts(ctx: Koa.Context){
+        ctx.body = {ok: false};
     }
 }
 
+// The main router
 @Service()
 @Router()
 export class SpamRouter extends KoaRouter {
 
-    @Route("/")
+    // A status route
+    @Route()
     test(ctx: Koa.Context){
-        ctx.body = {ok: true, config: this.config.toString()}
+        ctx.body = {ok: true};
     }
 
-    @Route("/alerts")
-    getAlerts(ctx: Koa.Context){
-        ctx.body = this.alerts.getAlerts();
-    }
-
-
-    constructor(protected config: SpamConfig, protected alerts: AlertsController){
+    constructor(protected config: SpamConfig, protected alertsRouter: AlertsRouter){
         super();
+
+        // Mount the router on API
+        this.use(alertsRouter.routes());
+
     }
 }

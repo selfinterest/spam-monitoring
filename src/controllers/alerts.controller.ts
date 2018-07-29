@@ -1,14 +1,12 @@
-import {SpamController} from "./spam.controller";
 import {SpamConfig} from "../config";
 import {Factory, Service} from "../decorators/service.decorator";
 
 @Service()
-export class AlertsController extends SpamController   {
+export class AlertsController    {
 
     constructor(protected config: SpamConfig){
-        super();
+        //super();
 
-        console.log("Register alerts controller");
     }
 
     getAlerts(){

@@ -66,7 +66,6 @@ export const Router = function(routerConfig: any = {}) {
             constructor(...args: any[]){
                 super(...args);
 
-
                 const router = this;
                 const keys = Reflect.getMetadata(routerMetadata, this);
                 keys.forEach( (key: string) => {
@@ -74,6 +73,17 @@ export const Router = function(routerConfig: any = {}) {
                       const fn = (this as any)[key].bind(router);
                       fn(router);   // this looks ridiculous
                   }
+                })
+
+                // This applies methods like "prefix" with args passed to decorator
+                Object.keys(routerConfig).forEach ( k => {
+                    if(k in this) {
+                        if(typeof (this as any)[k] === "function") {
+                            (this as any)[k].call(this, routerConfig[k]);
+                        } else {
+                            (this as any)[k] = routerConfig[k];
+                        }
+                    }
                 })
 
             }
