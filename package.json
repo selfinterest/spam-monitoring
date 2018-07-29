@@ -15,7 +15,10 @@
   "author": "KT Watson <terrence.watson@mheducation.com>",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.5.2",
+    "bluebird": "^3.5.1",
     "koa": "^2.5.1",
+    "koa-bodyparser": "^4.2.1",
     "koa-logger": "^3.2.0",
     "koa-mount": "^3.0.0",
     "koa-router": "^7.4.0",
@@ -24,7 +27,9 @@
     "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.5.8",
     "@types/koa": "^2.0.46",
+    "@types/koa-bodyparser": "^5.0.1",
     "@types/koa-logger": "^3.1.0",
     "@types/koa-mount": "^3.0.1",
     "@types/koa-router": "^7.0.30",

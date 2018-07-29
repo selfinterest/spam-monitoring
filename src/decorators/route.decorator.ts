@@ -5,7 +5,7 @@ import {type} from "os";
 
 export interface RouteConfig {
     method?: string;
-    path: string;
+    path?: string;
 }
 
 
@@ -23,6 +23,7 @@ export const Route = function(routeConfigAsMaybeString: RouteConfig | string = {
     } : routeConfigAsMaybeString;
 
     routeConfig.method = routeConfig.method || "get";
+    routeConfig.path = routeConfig.path || "/";
 
     return function (...args: any[]) {
 

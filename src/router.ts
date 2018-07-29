@@ -15,8 +15,14 @@ export class AlertsRouter extends KoaRouter{
     }
 
     @Route()
-    getAlerts(ctx: Koa.Context) {
-        ctx.body = this.alertsController.getAlerts();
+    async getAlerts(ctx: Koa.Context) {
+        ctx.body = await this.alertsController.getAlerts();
+    }
+
+    @Route({method: "post"})
+    async postAlert(ctx: Koa.Context) {
+        const result = await this.alertsController.pushAlert(ctx.request.body);
+        ctx.body = result;
     }
 
 }

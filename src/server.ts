@@ -3,6 +3,7 @@ import {SpamConfig} from "./config";
 import {Service} from "./decorators/service.decorator";
 import logger = require("koa-logger");
 import {SpamRouter} from "./router";
+import bodyParser = require("koa-bodyparser");
 
 @Service()
 export class SpamServer extends Koa {
@@ -16,6 +17,7 @@ export class SpamServer extends Koa {
 
 
     start(){
+        this.use(bodyParser());
         this.use(logger());
         this.use(this.router.routes());
         this.listen(this.port, () => {

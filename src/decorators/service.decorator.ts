@@ -92,29 +92,8 @@ export const Injector = new class {
 
         let injections = tokens.map ( (token: any) => Injector.resolve<any>(token));
         const thing = factoryFn ? factoryFn(...injections) : new target(...injections);
-        // do we already have the thing?
-
-
-        //const thing = resolved || new target(...injections);
-
-        // does thing have any unresolved dependencies?
-        //const dependencies = Reflect.getMetadata(metadatakey, target);
-
-        // Do now we have handled the constructor injections and have an instance of the thing
-
-        const paramTokens = Reflect.getMetadata(metadatakey, thing) || [];
-
-
-        injections = paramTokens.map((token: any) => Injector.resolve<any>(token));
-        //resolved = Reflect.getMetadata(isResolved, target);
-        //const thing
-
 
         Reflect.defineMetadata(isResolved, thing, target);
-
-
-        //const thing = new target(...injections);
-
 
         return thing;
 
