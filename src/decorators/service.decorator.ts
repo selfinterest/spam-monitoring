@@ -78,7 +78,7 @@ export const Injector = new class {
         return {};
     }
 
-    resolve<T>(target: Type<any>): T {
+    resolve<T>(target: Type<any>) {
         let resolved = Reflect.getMetadata(isResolved, target);
 
         if(resolved) return resolved;

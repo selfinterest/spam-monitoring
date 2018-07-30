@@ -9,15 +9,8 @@ export class SpamConfig {
 
     PORT = "3002";
 
-    alerts = {
-        queue: {
-            address: "http://localhost:5672",
-            name: "alerts"
-        }
-    }
-
     constructor(_rc: any = rc){
-        this._config = rc("spamdemo", this);
+        this._config = _rc("spamdemo", this);
     }
 
     @Factory()
@@ -25,16 +18,7 @@ export class SpamConfig {
         return new SpamConfig();
     }
 
-    get(key: string){
+    get(key: string | number | symbol){
         return get(this._config, key);
-    }
-
-    toString(){
-        const deserizlied = Object.keys(this._config).reduce ( (memo: any, key: string) => {
-            memo[key] = this._config[key];
-            return memo;
-        }, {});
-
-        return deserizlied;
     }
 }

@@ -6,17 +6,11 @@ import {RabbitMqBackend} from "../backends/rabbit";
 export class AlertsController    {
 
     constructor(protected config: SpamConfig, protected backend: RabbitMqBackend){
-        //super();
 
     }
 
     async getAlerts(){
         const message = await this.backend.pull();
-        /*if(message) {
-            return message.content;
-        } else {
-            return [];
-        }*/
 
         if(message) {
             return JSON.parse(message.content.toString());
@@ -28,8 +22,8 @@ export class AlertsController    {
 
 
 
-    pushAlert(e: any){
-        return this.backend.push(JSON.stringify({...e, date: Date.now()}));
+    async pushAlert(e: any){
+        return await this.backend.push(JSON.stringify({...e, date: Date.now()}));
     }
 
     @Factory()

@@ -3,57 +3,72 @@ import {EventEmitter} from "events";
 import {SpamConfig} from "../config";
 import _amqp = require("amqplib");
 import {Channel, Connection} from "amqplib";
+import {MemoryQueueBackend} from "./memory";
 
+export interface QueueConfig {
+    name: string;
+    address: string;
+}
 @Service()
-export class RabbitMqBackend extends EventEmitter {
+export class RabbitMqBackend  {
 
-    protected channel: Promise<Channel>;
+    //protected channel!: Channel;
+    protected channel: any;
 
-    protected readonly queueName = this.config.get("alerts.queue.name");
+    protected readonly queueConfig: QueueConfig;
 
     constructor(protected config: SpamConfig, protected amqp = _amqp){
-        super();
+        this.queueConfig = config.get("alerts.queue");
 
-        this.channel = Promise.resolve(
-            this.amqp.connect(config.get("alerts.queue.address"))
-        ).then( conn => {
-            return conn.createChannel()
-        }).then ( ch => {
-            return ch.assertQueue(this.queueName).then( ok => {
-                if(ok) {
-                    console.log("Opened queue");
-                    return ch;
-                } else {
-                    throw new Error("Could not open queue");
-                }
-
-            })
-        }).catch ( e => {
-            console.error(e);
+        /*this.initializeQueue().catch( e => {
             throw e;
-        })
-        // We use Promise.resolve to coerce the Bluebird promise into a stanard one.
-        /*this.channel = Promise.resolve(amqp.connect(config.get("inqueueaddress")).then( conn => conn.createChannel()));
-        /*this.queue = Promise.resolve(this.channel.then( ch => ch.assertQueue("inqueueaddress")));*/
+        })*/
     }
 
     @Factory()
     static init(config: SpamConfig){
-        return new RabbitMqBackend(config);
+        const backend = new RabbitMqBackend(config);
+        const queueMethods = ["push", "pull"];
+
+        // This proxy will lazily load the queue the first time a queue method is used
+        return new Proxy(backend, {
+            get(target, key) {
+                if(~queueMethods.indexOf(<string>key)) {
+                    const method = (target as any)[key];
+
+                    return async function(...args: any[]) {
+                        const t = await target.initializeQueue();
+                        const result = method.apply(target, args);
+                        return await result;
+                    }
+
+                }
+            }
+        })
+
     }
 
+    async initializeQueue(){
+        if(this.channel) return this.channel;
+        const connection = await this.amqp.connect(this.queueConfig.address);
+        const channel = await connection.createChannel();
+        if(await channel.assertQueue(this.queueConfig.name)) {
+            console.log("opened queue");
+        } else {
+            throw new Error("Could not open queue");
+        }
 
-    pull() {
-        return this.channel.then( ch => {
-            return ch.get(this.queueName);
-        })
+        this.channel = channel;
+
+        return this.channel;
     }
 
-    push(e: any){
-        return this.channel.then( ch => {
-            return ch.sendToQueue(this.queueName, Buffer.from(e))
-        })
-        //this.queue()
+    async pull() {
+        return await this.channel.get(this.queueConfig.name);
+    }
+
+    async push(e: any){
+        return await this.channel.sendToQueue(this.queueConfig.name, Buffer.from(e))
     }
 
 }

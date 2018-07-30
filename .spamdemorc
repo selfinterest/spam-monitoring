@@ -1,0 +1,3 @@
+[alerts.queue]
+address="amqp://localhost:5672"
+name="alerts"
