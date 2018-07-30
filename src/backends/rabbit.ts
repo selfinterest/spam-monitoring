@@ -6,8 +6,8 @@ import {Channel, Connection} from "amqplib";
 import {MemoryQueueBackend} from "./memory";
 
 export interface QueueConfig {
-    name: string;
-    address: string;
+    host: string;
+    queue: string;
 }
 @Service()
 export class RabbitMqBackend  {
@@ -33,13 +33,18 @@ export class RabbitMqBackend  {
         // This proxy will lazily load the queue the first time a queue method is used
         return new Proxy(backend, {
             get(target, key) {
-                if(~queueMethods.indexOf(<string>key)) {
+                if(~queueMethods.indexOf(key as string)) {
                     const method = (target as any)[key];
 
                     return async function(...args: any[]) {
-                        const t = await target.initializeQueue();
-                        const result = method.apply(target, args);
-                        return await result;
+                        try {
+                            await target.initializeQueue();
+                            const result = method.apply(target, args);
+                            return await result;
+                        } catch (e) {
+                            throw e;
+                        }
+
                     }
 
                 }
@@ -50,9 +55,9 @@ export class RabbitMqBackend  {
 
     async initializeQueue(){
         if(this.channel) return this.channel;
-        const connection = await this.amqp.connect(this.queueConfig.address);
+        const connection = await this.amqp.connect(this.queueConfig.host);
         const channel = await connection.createChannel();
-        if(await channel.assertQueue(this.queueConfig.name)) {
+        if(await channel.assertQueue(this.queueConfig.queue)) {
             console.log("opened queue");
         } else {
             throw new Error("Could not open queue");
@@ -64,11 +69,11 @@ export class RabbitMqBackend  {
     }
 
     async pull() {
-        return await this.channel.get(this.queueConfig.name);
+        return await this.channel.get(this.queueConfig.queue);
     }
 
     async push(e: any){
-        return await this.channel.sendToQueue(this.queueConfig.name, Buffer.from(e))
+        return await this.channel.sendToQueue(this.queueConfig.queue, Buffer.from(e))
     }
 
 }
