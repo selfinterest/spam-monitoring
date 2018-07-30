@@ -1,9 +1,9 @@
-import {Factory, Service} from "../decorators/service.decorator";
+import {Factory, Service} from "../../decorators/service.decorator";
 import {EventEmitter} from "events";
-import {SpamConfig} from "../config";
+import {SpamConfig} from "../../config/index";
 import _amqp = require("amqplib");
 import {Channel, Connection} from "amqplib";
-import {MemoryQueueBackend} from "./memory";
+import {MemoryQueueBackend} from "../memory";
 
 export interface QueueConfig {
     host: string;
@@ -19,10 +19,6 @@ export class RabbitMqBackend  {
 
     constructor(protected config: SpamConfig, protected amqp = _amqp){
         this.queueConfig = config.get("alerts.queue");
-
-        /*this.initializeQueue().catch( e => {
-            throw e;
-        })*/
     }
 
     @Factory()

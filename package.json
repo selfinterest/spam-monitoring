@@ -24,6 +24,7 @@
     "koa-mount": "^3.0.0",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.10",
+    "pg-promise": "^8.4.5",
     "rc": "^1.2.8",
     "reflect-metadata": "^0.1.12"
   },
@@ -35,6 +36,7 @@
     "@types/koa-mount": "^3.0.1",
     "@types/koa-router": "^7.0.30",
     "@types/lodash": "^4.14.112",
+    "@types/pg-promise": "^5.4.3",
     "@types/rc": "0.0.1",
     "cross-env": "^5.2.0",
     "mocha": "^5.2.0",

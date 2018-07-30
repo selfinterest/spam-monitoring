@@ -1,6 +1,6 @@
 import {SpamConfig} from "../config";
 import {Factory, Service} from "../decorators/service.decorator";
-import {RabbitMqBackend} from "../backends/rabbit";
+import {RabbitMqBackend} from "../backends/queue/rabbit";
 
 @Service()
 export class AlertsController    {

@@ -7,3 +7,12 @@ services:
       - "5672:5672"
     labels:
       NAME: "spam-alert-queue"
+  db:
+    image: "postgres:10.4-alpine"
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+    labels:
+      NAME: "spam-grades"
