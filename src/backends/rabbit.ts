@@ -8,17 +8,18 @@ import {Channel, Connection} from "amqplib";
 export class RabbitMqBackend extends EventEmitter {
 
     protected channel: Promise<Channel>;
-    //protected queue: Promise<Channel>;
+
+    protected readonly queueName = this.config.get("alerts.queue.name");
 
     constructor(protected config: SpamConfig, protected amqp = _amqp){
         super();
 
         this.channel = Promise.resolve(
-            this.amqp.connect(config.get("inqeueaddress"))
+            this.amqp.connect(config.get("alerts.queue.address"))
         ).then( conn => {
             return conn.createChannel()
         }).then ( ch => {
-            return ch.assertQueue("inqueue").then( ok => {
+            return ch.assertQueue(this.queueName).then( ok => {
                 if(ok) {
                     console.log("Opened queue");
                     return ch;
@@ -41,13 +42,13 @@ export class RabbitMqBackend extends EventEmitter {
 
     pull() {
         return this.channel.then( ch => {
-            return ch.get("inqueue");
+            return ch.get(this.queueName);
         })
     }
 
     push(e: any){
         return this.channel.then( ch => {
-            return ch.sendToQueue("inqueue", Buffer.from(e))
+            return ch.sendToQueue(this.queueName, Buffer.from(e))
         })
         //this.queue()
     }

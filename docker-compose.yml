@@ -1,16 +1,9 @@
 version: '3'
 services:
-  inqueue:
+  alertqueue:
     image: "rabbitmq:3"
-    hostname: "inqueue"
+    hostname: "alertqueue"
     ports:
       - "5672:5672"
     labels:
-      NAME: "spam-inqueue"
-  outqueue:
-    image: "rabbitmq:3"
-    hostname: "outqueue"
-    ports:
-      - "5673:5672"
-    labels:
-      NAME: "spam-outqueue"
+      NAME: "spam-alert-queue"

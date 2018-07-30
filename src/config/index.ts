@@ -9,7 +9,12 @@ export class SpamConfig {
 
     PORT = "3002";
 
-    inQueueAddress = "http://localhost:5672";
+    alerts = {
+        queue: {
+            address: "http://localhost",
+            name: "alerts"
+        }
+    }
 
     constructor(_rc: any = rc){
         this._config = rc("spamdemo", this);
