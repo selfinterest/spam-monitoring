@@ -28,6 +28,9 @@ export class RabbitMqBackend extends EventEmitter {
                 }
 
             })
+        }).catch ( e => {
+            console.error(e);
+            throw e;
         })
         // We use Promise.resolve to coerce the Bluebird promise into a stanard one.
         /*this.channel = Promise.resolve(amqp.connect(config.get("inqueueaddress")).then( conn => conn.createChannel()));

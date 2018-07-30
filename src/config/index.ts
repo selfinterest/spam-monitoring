@@ -11,7 +11,7 @@ export class SpamConfig {
 
     alerts = {
         queue: {
-            address: "http://localhost",
+            address: "http://localhost:5672",
             name: "alerts"
         }
     }
