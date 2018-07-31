@@ -15,15 +15,7 @@ export class PostgresBackend extends LazyAbstractBackend {
         super();
     }
 
-    async initialize(){
-        if(this.db) return this;
-        const pgp = this._pgp();
-        this.db = pgp({
-            user: "postgres",
-            password: "password",
-            database: "postgres"
-        });
-
+    private async createGradeTable(){
         await this.db.query(
             'CREATE SCHEMA IF NOT EXISTS myschema'
         );
@@ -59,8 +51,20 @@ export class PostgresBackend extends LazyAbstractBackend {
                 EXECUTE PROCEDURE trigger_set_timestamp();
             `
         );
+    }
 
-        return await this;
+    async initialize(){
+        if(this.db) return this;
+        const pgp = this._pgp();
+        this.db = pgp({
+            user: "postgres",
+            password: "password",
+            database: "postgres"
+        });
+
+       await this.createGradeTable();
+
+       return await this;
     }
 
     async push(grade: any){
@@ -79,7 +83,7 @@ export class PostgresBackend extends LazyAbstractBackend {
     @Factory()
     static init(config: SpamConfig){
         const backend = new PostgresBackend(config);
-        return super.init(backend);
+        return super.init(backend); // invoke the lazy backend
         //return new PostgresBackend(config);
 
     }
