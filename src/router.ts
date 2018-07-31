@@ -1,7 +1,7 @@
 import {Service} from "./decorators/service.decorator";
 import {SpamConfig} from "./config";
 import {AlertsController, GradesController} from "./controllers";
-import {Route, Router} from "./decorators/route.decorator";
+import {RequiredParameters, Route, Router} from "./decorators/route.decorator";
 import Koa = require("koa");
 import KoaRouter = require("koa-router");
 import mount = require("koa-mount");
@@ -19,8 +19,13 @@ export class GradesRouter extends KoaRouter {
     }
 
     @Route({method: "post"})
+    @RequiredParameters("request.body.grade", "request.body.id")
     async postGrade(ctx: Koa.Context) {
-        ctx.body = await this.gradesController.postGrade();
+        const {grade, id} = ctx.state;
+        ctx.body = await this.gradesController.postGrade({
+          grade,
+          id
+        })
     }
 }
 

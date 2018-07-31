@@ -12,8 +12,8 @@ export class GradesController {
         return await this.db.pull();
     }
 
-    async postGrade(){
-        return await this.db.push(1234);
+    async postGrade(gradeInfo: any){
+        return await this.db.push(gradeInfo);
     }
 
 

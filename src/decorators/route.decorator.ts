@@ -1,17 +1,59 @@
 
 import KoaRouter = require("koa-router");
 import Koa = require("koa");
-import {type} from "os";
+import {get, partition, last, set} from "lodash";
+import compose = require("koa-compose");
 
 export interface RouteConfig {
     method?: string;
     path?: string;
 }
 
+export interface RequiredValidator {
+    path: string;
+    publishPath: string | undefined;
+}
 
 const routerMetadata = Symbol.for("routerMetadata");
+const validatorMetadata = Symbol.for("validatorMetadata");
+
+const checkValidators = function(router: any, key: string) {
+    return (ctx: Koa.Context, next: Function) => {
+        const validators = Reflect.getMetadata(validatorMetadata, router, key);
+        if(validators) {
+            // process the validators
+            const required: (RequiredValidator | string)[] = validators.required || [];
+            const [notMissing, missing] = partition(required, s => typeof get(ctx, (typeof s === "string" ? s : s.path)) !== "undefined");
+            if(missing.length > 0) {
+                console.error("Failed validation", missing);
+                ctx.throw(400);
+            } else {
+                notMissing.forEach( s => {
+                    let v: RequiredValidator;
+                    if(typeof s === "string") {
+                        v = {
+                            path: s,
+                            publishPath: last(s.split("."))
+                        }
+                    } else {
+                        v = s;
+                    }
+
+                    if(v.publishPath) {
+                        set(ctx, "state." + v.publishPath, get(ctx, v.path));
+                    }
+                });
+
+                return next();
+            }
+
+        } else {
+            return next();
+        }
 
 
+    }
+}
 export const Route = function(routeConfigAsMaybeString: RouteConfig | string = {method: "get", path: "/"}) {
     /*return function(target: any, key: string, descriptor: any) {
 
@@ -35,7 +77,7 @@ export const Route = function(routeConfigAsMaybeString: RouteConfig | string = {
 
         //Reflect.defineMetadata(routerMetadata, {"name": "bob"}, target);
         descriptor.value = function(router: any) {
-            router[routeConfig.method as string](routeConfig.path, fn.bind(this));
+            router[routeConfig.method as string](routeConfig.path, checkValidators(router, key), fn.bind(this));
         }
 
         const keys = Reflect.getMetadata(routerMetadata, target) || [];
@@ -89,5 +131,62 @@ export const Router = function(routerConfig: any = {}) {
 
             }
         }
+    }
+}
+
+export const RequiredParameters = function(...somePaths: string[]){
+    return function (...args: any[]) {
+        const [target, key] = args;
+        const validators = Reflect.getMetadata(validatorMetadata, target, key) || {
+            required: [],
+            optional: []
+        };
+
+        validators.required = [...validators.required, ...somePaths];
+
+        Reflect.defineMetadata(validatorMetadata, validators, target, key);
+        //const fn = descriptor.value;
+
+        /*descriptor.value = function(router: any) {
+
+        }*/
+
+        /*descriptor.value = compose([
+            (ctx: Koa.Context, next: Function) => {
+                ctx.state.test = "aadf";
+                return next();
+            },
+            fn.bind(target)
+        ]).bind(target);*/
+
+        /*descriptor.value = async function(...args: any[]) {
+            const [ctx] = args;
+            ctx.state.test = "asdf";
+            return await fn.apply(target, args);
+        }*/
+
+        /*descriptor.value = compose(
+            [
+                async function(ctx: Koa.Context, next: Function) {
+                    return next();
+                },
+                fn.bind(target)
+        ]).bind(target);*/
+
+        /*const validator = async function(ctx: Koa.Context, next: Function) {
+            ctx.state.test = "adf";
+            return await next();
+        }.bind(target);*/
+
+        /*const validator = (ctx: Koa.Context) => {
+            ctx.state.test = "adf";
+        }
+
+        descriptor.value = (ctx: Koa.Context, next: Function) => {
+            validator(ctx);
+            return fn(ctx, next);
+        }*/
+
+        //return descriptor;
     }
 }
