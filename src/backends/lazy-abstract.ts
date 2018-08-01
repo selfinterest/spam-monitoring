@@ -4,12 +4,16 @@ export abstract class LazyAbstractBackend  {
     abstract push(...args: any[]): any;
     abstract pull(...args: any[]): any;
 
-    static init(backend: any, ...args: any[]){
-        const queueMethods = ["push", "pull"];
+     _queueMethods = ["push", "pull"];
+    abstract queueMethods: string[] = [];
+
+    static init<T extends LazyAbstractBackend>(...args: any[]){
+        const backend: T = args[0];     // yay generics!
+        const queueMethods = [ ...backend.queueMethods, ...backend._queueMethods];
 
         // This proxy will lazily load the queue the first time a queue method is used
         return new Proxy(backend, {
-            get(target, key) {
+            get(target: T, key) {
                 if(~queueMethods.indexOf(key as string)) {  // wrap method with an initializer
                     const method = (target as any)[key];
 

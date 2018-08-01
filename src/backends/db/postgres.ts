@@ -11,7 +11,9 @@ export class PostgresBackend extends LazyAbstractBackend {
 
     private readonly connectionString = "postgres://localhost";
 
-    constructor(config: SpamConfig, protected _pgp: () => IMain = pgPromise){
+    queueMethods = ["count", "pullAverage"];
+
+    constructor(protected config: SpamConfig, protected _pgp: () => IMain = pgPromise){
         super();
     }
 
@@ -79,12 +81,20 @@ export class PostgresBackend extends LazyAbstractBackend {
         return await this.db.query("SELECT * FROM myschema.grades");
     }
 
+    async count(){
+        return await this.db.query("SELECT COUNT(*) FROM myschema.grades");
+    }
+
+    async pullAverage(){
+        return await this.db.query(
+            `SELECT avg(myschema.grades.grade) FROM myschema.grades`
+        )
+    }
+
 
     @Factory()
     static init(config: SpamConfig){
-        const backend = new PostgresBackend(config);
-        return super.init(backend); // invoke the lazy backend
-        //return new PostgresBackend(config);
+        return super.init<PostgresBackend>(new PostgresBackend(config)); // invoke the lazy backend
 
     }
 

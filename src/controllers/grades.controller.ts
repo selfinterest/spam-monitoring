@@ -16,6 +16,10 @@ export class GradesController {
         return await this.db.push(gradeInfo);
     }
 
+    async getAverage(){
+        return await this.db.pullAverage();
+    }
+
 
 
 }
