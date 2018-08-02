@@ -1,11 +1,20 @@
 import {Factory, Service} from "../../decorators/service.decorator";
 import {SpamConfig} from "../../config";
-import {LazyAbstractBackend} from "../lazy-abstract";
+import {LazyAbstractBackend, LazyInitialization} from "../lazy-abstract";
 import pgPromise = require("pg-promise");
 import {IDatabase, IMain} from "pg-promise";
 
+const lazyMetadata = Symbol.for("lazyMethods");
+
+const Lazy = function(intializingMethod: string = "initialize"){
+    return function(target: any, key: string, descriptor: PropertyDescriptor) {
+        Reflect.defineMetadata(lazyMetadata, intializingMethod, target, key);
+        return descriptor;
+    }
+}
+
 @Service()
-export class PostgresBackend extends LazyAbstractBackend {
+export class PostgresBackend  {
 
     db!: IDatabase<any>;
 
@@ -14,8 +23,9 @@ export class PostgresBackend extends LazyAbstractBackend {
     queueMethods = ["count", "pullAverage"];
 
     constructor(protected config: SpamConfig, protected _pgp: () => IMain = pgPromise){
-        super();
+
     }
+
 
     private async createGradeTable(){
         await this.db.query(
@@ -55,7 +65,7 @@ export class PostgresBackend extends LazyAbstractBackend {
         );
     }
 
-    async initialize(){
+    async initialize(instance: PostgresBackend){
         if(this.db) return this;
         const pgp = this._pgp();
         this.db = pgp({
@@ -69,6 +79,7 @@ export class PostgresBackend extends LazyAbstractBackend {
        return await this;
     }
 
+    @Lazy()
     async push(grade: any){
         return await this.db.query(
             'INSERT INTO myschema.grades (id, grade) VALUES (${id}, ${grade}) ' +
@@ -77,14 +88,17 @@ export class PostgresBackend extends LazyAbstractBackend {
         )
     }
 
+    @Lazy()
     async pull(){
         return await this.db.query("SELECT * FROM myschema.grades");
     }
 
+    @Lazy()
     async count(){
         return await this.db.query("SELECT COUNT(*) FROM myschema.grades");
     }
 
+    @Lazy()
     async pullAverage(){
         return await this.db.query(
             `SELECT avg(myschema.grades.grade) FROM myschema.grades`
@@ -94,7 +108,28 @@ export class PostgresBackend extends LazyAbstractBackend {
 
     @Factory()
     static init(config: SpamConfig){
-        return super.init<PostgresBackend>(new PostgresBackend(config)); // invoke the lazy backend
+        const backend = new PostgresBackend(config);
+
+        return new Proxy(backend, {
+            get(target, key){
+                const initializer = Reflect.getMetadata(lazyMetadata, target, (key as string)) || null;
+                if(!initializer) return Reflect.get(target, key);
+
+                //if(key !== "pull") return Reflect.get(target, key);
+
+                // We shall delegate to the original method
+                const origMethod = (target as any)[key];
+
+                return async function(...args: any[]) {
+                    await (target as any)[initializer](target);
+                    return await await origMethod.apply(target, args);
+                }
+
+            }
+        })
+
+        return backend;
+        //eturn super.init<PostgresBackend>(backend); // invoke the lazy backend
 
     }
 

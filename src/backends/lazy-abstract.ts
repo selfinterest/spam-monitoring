@@ -1,14 +1,42 @@
+import {SpamConfig} from "../config";
+
+
+/*export const LazyInitialization = function <T extends {new(...args:any[]):{}}>(constructor:T) {
+    return (target: T) => {
+
+    }
+}*/
+
+/*export const LazyInitialization = () => {
+    return function <T extends {new(...args:any[]):{}}>(constructor:T) {
+        return new Proxy(constructor, {
+            construct(target, args){
+
+            }
+        })
+    }
+}*/
+
+export const LazyInitialization = () => {
+
+}
+
 export abstract class LazyAbstractBackend  {
 
     abstract initialize(): Promise<LazyAbstractBackend>;
     abstract push(...args: any[]): any;
     abstract pull(...args: any[]): any;
 
-     _queueMethods = ["push", "pull"];
+     _queueMethods = ["push", "pull"];  // not satisfied with this. Could be done better with decorators!
+
     abstract queueMethods: string[] = [];
 
-    static init<T extends LazyAbstractBackend>(...args: any[]){
-        const backend: T = args[0];     // yay generics!
+    protected constructor(...args: any[]){
+
+    }
+
+    static init<T extends LazyAbstractBackend>(backend: T){
+        //const backend: T = args[0];     // yay generics!
         const queueMethods = [ ...backend.queueMethods, ...backend._queueMethods];
 
         // This proxy will lazily load the queue the first time a queue method is used
@@ -31,6 +59,6 @@ export abstract class LazyAbstractBackend  {
                     return Reflect.get(target, key);
                 }
             }
-        })
+        });
     }
 }

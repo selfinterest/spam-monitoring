@@ -9,6 +9,7 @@ export class GradesController {
 
 
     async getGrades(){
+       console.log(this.db.pull.toString());
         return await this.db.pull();
     }
 

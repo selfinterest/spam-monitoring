@@ -17,6 +17,7 @@
   "dependencies": {
     "amqplib": "^0.5.2",
     "bluebird": "^3.5.1",
+    "core-decorators": "^0.20.0",
     "in-memory-queue": "^1.0.3",
     "koa": "^2.5.1",
     "koa-bodyparser": "^4.2.1",
@@ -26,7 +27,9 @@
     "lodash": "^4.17.10",
     "pg-promise": "^8.4.5",
     "rc": "^1.2.8",
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.12",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
     "@types/amqplib": "^0.5.8",
@@ -38,6 +41,7 @@
     "@types/lodash": "^4.14.115",
     "@types/pg-promise": "^5.4.3",
     "@types/rc": "0.0.1",
+    "@types/request-promise": "^4.1.42",
     "cross-env": "^5.2.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.17.5",
